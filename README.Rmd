@@ -9,25 +9,160 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Github repository (IF NOT PROVIDED)
-
 # Required Packages
+```{r}
+library(httr)
+library(jsonlite)
+library(tidyverse)
+library(dplyr)
+```
 
 # Contact the NHL records API and the NHL stats API
+```{r}
+nhl_records <- function(endpoint, team_id=NULL, team_name=NULL){
+  # Endpoint options are: Franchise, TeamTotals, Franchise_SeasonTotals, GoalieRecords, SkaterRecords
+  base_url <- 'https://records.nhl.com/site/api'
+  if(endpoint == 'Franchise'){
+    fork <- '/franchise' 
+    
+    # Paste together the full url
+    full_url <- paste0(base_url, fork)
+    
+    #Pull a GET request
+    df_get <- GET(full_url)
+  }
+  if(endpoint == 'TeamTotals'){
+    fork <- '/franchise-team-totals'
+    
+    # Paste together the full url
+    full_url <- paste0(base_url, fork)
+    
+    #Pull a GET request
+    df_get <- GET(full_url)
+  }
+  if(endpoint == 'Franchise_SeasonTotals'){
+    fork <- '/franchise-season-records'
+    
+    # Paste together the full url
+    full_url <- paste0(base_url, fork)
+    
+    #Pull a GET request
+    df_get <- GET(full_url, query='?cayenneExp=franchiseId=ID')
+  }
+  if(endpoint == 'GoalieRecords'){
+    fork <- '/franchise-goalie-records'
+    
+    # Paste together the full url
+    full_url <- paste0(base_url, fork)
+    
+    #Pull a GET request
+    df_get <- GET(full_url, query='?cayenneExp=franchiseId=ID')
+  }
+  if(endpoint == 'SkaterRecords'){
+    fork <- '/franchise-skater-records' 
+    
+    # Paste together the full url
+    full_url <- paste0(base_url, fork)
+    
+    #Pull a GET request
+    df_get <- GET(full_url, query='?cayenneExp=franchiseId=ID')
+  }
+  
+  # Convert to text
+  df_text <- content(df_get, as='text', enconding='UTF-8')
+  
+  # Convert form JSON
+  df_json <- fromJSON(df_text, flatten=TRUE)
+  
+  # Use conditional logic to determine how the user is searching
+  if(!is.null(team_name) & is.null(team_id)){
+    if(endpoint=='Franchise'){
+      df <- df_json$data[,-1]
+      
+      # Clean the dataframe to make the names searchable in our current format
+      teamCommonName <- paste(df$teamPlaceName, df$teamCommonName)
+      df <- cbind(df, teamCommonName)
+    
+      # Remove the old names split over two columns
+      df <- df[,-(4:5)]
+    
+      df <- filter(df, teamCommonName==team_name)
+    }
+    if(endpoint=='TeamTotals'){
+      df <- df_json$data[,-1]
+      df <- filter(df, teamName==team_name)
+    }
+    if(endpoint=='Franchise_SeasonTotals' | endpoint=='GoalieRecords' | endpoint=='SkaterRecords'){
+      df <- df_json$data[,-1]
+      df <- filter(df, franchiseName==team_name)
+    }
+  }
+  if(is.null(team_name) & !is.null(team_id)){
+    if(endpoint=='Franchise'){
+      df <- df_json$data[,-1]
+      df <- filter(df, mostRecentTeamId==as.integer(team_id))
+    }
+    if(endpoint=='TeamTotals'){
+      df <- df_json$data[,-1]
+      df <- filter(df, teamId==team_id)
+    }
+    if(endpoint=='Franchise_SeasonTotals' | endpoint=='GoalieRecords' | endpoint=='SkaterRecords'){
+      df <- df_json$data[,-1]
+      df <- filter(df, franchiseId==team_id)
+    }
+  }  
+  if(is.null(team_id) & is.null(team_name)){
+    df <- df_json$data[,-1]
+  }
+  return(df)
+}
+
+nhl_stats <- function(team_id=NULL, team_name=NULL){
+  base_url <- 'https://statsapi.web.nhl.com/api/v1/teams'
+}
+```
 
 # Create a wrapper that accesses any of the above endpoints. This function should be able to call any of the appropriate endpoints as per the users request (including any modifiers, team IDS etc.)
+```{r}
+nhl_data <- function(source, ...){
+  if(source == records){
+    nhl_records(...)
+  }
+  if(source == stats){
+    nhl_stats(...)
+  }
+  if(source != c(source, stats)){
+    return('Acceptable sources: records, stats')
+  }
+}
+```
 
 # Basic exploratory data analysis (be sure to discuss what each graph is showing)
 
 ## Do a join on two returned datasets from different API endpoints
+```{r}
+
+```
 
 ## Create at least two new variables
+```{r}
+
+```
 
 ## Create some contingency tables
+```{r}
+
+```
 
 ## Create numerical summaries for some quantitative variables at each setting of some of your categorical variables
+```{r}
+
+```
 
 ## Create at least five plots utilizing coloring, grouping, etc. All plots should have nice labels, titles, etc. You should have at least one bar plot, one histogram, one box plot, and one scatterplot. 
+```{r}
+
+```
 
 NOTE THAT CODE SHOULD BE SHOWN IN THE FINAL DOCUMENT UNLESS IT IS BEHIND THE SCENES OR UNIMPORTANT FOR THE OUTPUT WE ARE SEEING
 
