@@ -3,7 +3,7 @@
     "path": "~/Documents/R/Git_Repo/ST558_Git/ST558/README.Rmd",
     "project_path": "README.Rmd",
     "type": "r_markdown",
-    "hash": "0",
+    "hash": "1453900832",
     "contents": "",
     "dirty": false,
     "created": 1600359644631.0,
@@ -11,15 +11,15 @@
     "relative_order": 1,
     "properties": {
         "tempName": "Untitled1",
-        "cursorPosition": "10,0",
-        "scrollLine": "0"
+        "cursorPosition": "15,51",
+        "scrollLine": "11"
     },
     "folds": "",
-    "lastKnownWriteTime": 1600359830,
+    "lastKnownWriteTime": 1600360850,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1600359831004,
+    "last_content_update": 1600360850268,
     "read_only": false,
     "read_only_alternatives": []
 }
