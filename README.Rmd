@@ -13,7 +13,6 @@ knitr::opts_chunk$set(echo = TRUE)
 ```{r}
 library(httr)
 library(jsonlite)
-library(tidyverse)
 library(dplyr)
 ```
 
@@ -116,23 +115,76 @@ nhl_records <- function(endpoint, team_id=NULL, team_name=NULL){
   }
   return(df)
 }
+```
 
-nhl_stats <- function(team_id=NULL, team_name=NULL){
-  base_url <- 'https://statsapi.web.nhl.com/api/v1/teams'
+```{r}
+nhl_stats <- function(modifier, modifier_extension=NULL, team_id=NULL){
+  # Modifier options are: team_roster, person_names, team_schedule_next, team_schedule_previous, 
+  # team_stats, team_roster_season, team_id, single_season_playoffs
+  base_url <- paste0('https://statsapi.web.nhl.com/api/v1/teams/', team_id)
+  
+  if(modifier=='team_roster'){
+    # Pull a GET request
+    query <- paste0('?expand=team.roster', modifier_extension)
+    df_get <- GET(base_url, query=query)
+  }
+  if(modifier=='person_names'){
+    # Pull a GET request
+    query <- paste0('?expand=person.names', modifier_extension)
+    df_get <- GET(base_url, query=query)
+  }
+  if(modifier=='team_schedule_next'){
+    # Pull a GET request
+    query <- paste0('?expand=team.schedule.next', modifier_extension)
+    df_get <- GET(base_url, query=query)
+  }
+  if(modifier=='team_schedule_previous'){
+    # Pull a GET request
+    query <- paste0('?expand=team.schedule.previous', modifier_extension)
+    df_get <- GET(base_url, query=query)
+  }
+  if(modifier=='team_stats'){
+    # Pull a GET request
+    query <- paste0('?expand=team.stats', modifier_extension)
+    df_get <- GET(base_url, query=query)
+  }
+  if(modifier=='team_roster_season'){
+    # Pull a GET request
+    query <- paste0('?expand=team.roster&season=', modifier_extension)
+    df_get <- GET(base_url, query=query)
+  }
+  if(modifier=='team_id'){
+    # Pull a GET request
+    query <- paste0('?teamId=', modifier_extension)
+    df_get <- GET(base_url, query=modifier_full)
+  }
+  if(modifier=='single_season_playoffs'){
+    # Pull a GET request
+    query <- paste0('?stats=statsSingleSeasonPlayoffs', modifier_extension)
+    df_get <- GET(base_url, query=query)
+  }
+  
+  # Convert to text
+  df_text <- content(df_get, as='text', enconding='UTF-8')
+  
+  # Convert form JSON
+  df_json <- fromJSON(df_text, flatten=TRUE)
+  
+  # Remove the redundant ID column
+  df <- df_json$teams[,-1]
+  
+  return(df)
 }
 ```
 
 # Create a wrapper that accesses any of the above endpoints. This function should be able to call any of the appropriate endpoints as per the users request (including any modifiers, team IDS etc.)
 ```{r}
 nhl_data <- function(source, ...){
-  if(source == records){
-    nhl_records(...)
+  if(source == 'records'){
+    return(nhl_records(...))
   }
-  if(source == stats){
-    nhl_stats(...)
-  }
-  if(source != c(source, stats)){
-    return('Acceptable sources: records, stats')
+  if(source == 'stats'){
+    return(nhl_stats(...))
   }
 }
 ```
